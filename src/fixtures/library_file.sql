@@ -1,0 +1,22 @@
+insert into library_file (original_file_name, base_name, extension, file_created_time, external_mod_time, path, parent_path)
+values
+("abc.jpg", "abc", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/abc.jpg",  "/Users/msoni/Desktop"),
+("def.jpg", "def", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/def.jpg",  "/Users/msoni/Desktop"),
+("ghi.jpg", "ghi", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/ghi.jpg",  "/Users/msoni/Desktop"),
+("jkl.jpg", "jkl", "png", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/jkl.png",  "/Users/msoni/Desktop"),
+("mno.jpg", "mno", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/mno.jpg",  "/Users/msoni/Desktop"),
+("pqr.jpg", "pqr", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/pqr.jpg",  "/Users/msoni/Desktop"),
+("stu.jpg", "stu", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/stu.jpg",  "/Users/msoni/Desktop"),
+("vwx.jpg", "vwx", "png", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/vwx.png",  "/Users/msoni/Desktop"),
+("yza.jpg", "yza", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/yza.jpg",  "/Users/msoni/Desktop"),
+("bcd.jpg", "bcd", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/bcd.jpg",  "/Users/msoni/Desktop"),
+("efg.jpg", "efg", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/efg.jpg",  "/Users/msoni/Downloads"),
+("hij.jpg", "hij", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/hij.jpg",  "/Users/msoni/Downloads"),
+("klm.jpg", "klm", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/klm.jpg",  "/Users/msoni/Downloads"),
+("nop.jpg", "nop", "png", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/nop.png",  "/Users/msoni/Desktop"),
+("qrs.jpg", "qrs", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/qrs.jpg",  "/Users/msoni/Desktop"),
+("tuv.jpg", "tuv", "jpeg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/tuv.jpeg",  "/Users/msoni/Desktop"),
+("wxy.jpg", "wxy", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/wxy.jpg",  "/Users/msoni/Downloads"),
+("zab.jpg", "zab", "png", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/zab.png",  "/Users/msoni/Desktop"),
+("cde.jpg", "cde", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/cde.jpg",  "/Users/msoni/Desktop"),
+("fgh.jpg", "fgh", "jpeg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/msoni/Desktop/fgh.jpeg",  "/Users/msoni/Desktop");

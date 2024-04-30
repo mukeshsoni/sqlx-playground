@@ -1,0 +1,22 @@
+INSERT INTO exif (image_id, camera_make, camera_model, f_number, iso_speed, shutter_speed, lens_make, lens_model, focal_length)
+values
+(1, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(2, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(3, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(4, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(5, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(6, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(7, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(8, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(9, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(10, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(11, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(12, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(13, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(14, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(15, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(16, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(17, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(18, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(19, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0),
+(20, "Fujifilm", "x-pro2", 2.0, 400.0, 5.121, "Fujifilm", "85mm f/1.8", 85.0);
