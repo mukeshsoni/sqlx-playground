@@ -278,6 +278,48 @@ pub async fn remove_keyword(
     Ok(())
 }
 
+pub async fn update_image_rating(
+    pool: &SqlitePool,
+    image_path: &str,
+    rating: u32,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("UPDATE image set rating=? from library_file lf where lf.id=image.library_file_id and lf.path=?")
+        .bind(rating)
+        .bind(image_path)
+        .execute(pool)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn update_color_label(
+    pool: &SqlitePool,
+    image_path: &str,
+    color_label: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("UPDATE image set color_label=? from library_file lf where lf.id=image.library_file_id and lf.path=?")
+        .bind(&color_label)
+        .bind(&image_path)
+        .execute(pool)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn update_flag(
+    pool: &SqlitePool,
+    image_path: &str,
+    flag: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("UPDATE image set flag=? from library_file lf where lf.id=image.library_file_id and lf.path=?")
+        .bind(flag)
+        .bind(image_path)
+        .execute(pool)
+        .await?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use std::time::Instant;
@@ -426,6 +468,48 @@ mod tests {
             .await?;
         let keyword_count = row.get::<u32, _>("count");
         assert_eq!(keyword_count, 19);
+        Ok(())
+    }
+
+    #[sqlx::test(fixtures("library_file", "image", "exif", "iptc", "tag"))]
+    async fn test_update_flag(pool: SqlitePool) -> sqlx::Result<()> {
+        let image_path = "/Users/fancy-name/Desktop/abc.jpg";
+        let flag = "rejected";
+        update_flag(&pool, image_path, flag).await?;
+        let query_result = sqlx::query("Select flag from image left join library_file on library_file.id=image.library_file_id where library_file.path=?")
+            .bind(image_path)
+            .fetch_one(&pool)
+            .await?;
+        let flag = query_result.get::<String, _>("flag");
+        assert_eq!(flag, "rejected");
+        Ok(())
+    }
+
+    #[sqlx::test(fixtures("library_file", "image", "exif", "iptc", "tag"))]
+    async fn test_update_image_rating(pool: SqlitePool) -> sqlx::Result<()> {
+        let image_path = "/Users/fancy-name/Desktop/abc.jpg";
+        let rating = 0;
+        update_image_rating(&pool, image_path, rating).await?;
+        let query_result = sqlx::query("Select rating from image left join library_file on library_file.id=image.library_file_id where library_file.path=?")
+            .bind(image_path)
+            .fetch_one(&pool)
+            .await?;
+        let rating = query_result.get::<u32, _>("rating");
+        assert_eq!(rating, 0);
+        Ok(())
+    }
+
+    #[sqlx::test(fixtures("library_file", "image", "exif", "iptc", "tag"))]
+    async fn test_update_color_label(pool: SqlitePool) -> sqlx::Result<()> {
+        let image_path = "/Users/fancy-name/Desktop/abc.jpg";
+        let color_label = "blue";
+        update_color_label(&pool, image_path, color_label).await?;
+        let query_result = sqlx::query("Select color_label from image left join library_file on library_file.id=image.library_file_id where library_file.path=?")
+            .bind(image_path)
+            .fetch_one(&pool)
+            .await?;
+        let color_label = query_result.get::<String, _>("color_label");
+        assert_eq!(color_label, "blue");
         Ok(())
     }
 }
