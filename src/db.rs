@@ -237,6 +237,47 @@ pub async fn get_keywords(pool: &SqlitePool) -> Result<Vec<String>, sqlx::Error>
     Ok(keywords)
 }
 
+async fn get_image_id_from_path(pool: &SqlitePool, image_path: &str) -> Result<u32, sqlx::Error> {
+    let row = sqlx::query("Select image.id from image left join library_file on image.library_file_id=library_file.id where library_file.path=$1")
+        .bind(image_path)
+        .fetch_one(pool)
+        .await?;
+
+    Ok(row.get::<u32, _>("id"))
+}
+
+pub async fn add_keyword(
+    pool: &SqlitePool,
+    image_path: &str,
+    keyword: &str,
+) -> Result<(), sqlx::Error> {
+    let image_id = get_image_id_from_path(pool, image_path).await?;
+
+    sqlx::query("INSERT into tag (image_id, tag_name) values (?, ?)")
+        .bind(image_id)
+        .bind(&keyword)
+        .execute(pool)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn remove_keyword(
+    pool: &SqlitePool,
+    image_path: &str,
+    keyword: &str,
+) -> Result<(), sqlx::Error> {
+    let image_id = get_image_id_from_path(pool, image_path).await?;
+
+    sqlx::query("DELETE from tag where image_id=$1 and tag_name=$2")
+        .bind(image_id)
+        .bind(&keyword)
+        .execute(pool)
+        .await?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use std::time::Instant;
@@ -348,6 +389,43 @@ mod tests {
     async fn test_get_keywords(pool: SqlitePool) -> sqlx::Result<()> {
         let keywords = get_keywords(&pool).await?;
         assert_eq!(keywords.len(), 11);
+        Ok(())
+    }
+
+    #[sqlx::test(fixtures("library_file", "image", "exif", "iptc", "tag"))]
+    async fn test_add_keyword(pool: SqlitePool) -> sqlx::Result<()> {
+        let row = sqlx::query("Select count(*) as count from tag")
+            .fetch_one(&pool)
+            .await?;
+        let keyword_count = row.get::<u32, _>("count");
+        assert_eq!(keyword_count, 20);
+
+        add_keyword(&pool, "/Users/fancy-name/Desktop/abc.jpg", "random_stuff").await?;
+
+        let row = sqlx::query("Select count(*) as count from tag")
+            .fetch_one(&pool)
+            .await?;
+        let keyword_count = row.get::<u32, _>("count");
+        assert_eq!(keyword_count, 21);
+
+        Ok(())
+    }
+
+    #[sqlx::test(fixtures("library_file", "image", "exif", "iptc", "tag"))]
+    async fn test_remove_keyword(pool: SqlitePool) -> sqlx::Result<()> {
+        let row = sqlx::query("Select count(*) as count from tag")
+            .fetch_one(&pool)
+            .await?;
+        let keyword_count = row.get::<u32, _>("count");
+        assert_eq!(keyword_count, 20);
+
+        remove_keyword(&pool, "/Users/fancy-name/Desktop/abc.jpg", "nature").await?;
+
+        let row = sqlx::query("Select count(*) as count from tag")
+            .fetch_one(&pool)
+            .await?;
+        let keyword_count = row.get::<u32, _>("count");
+        assert_eq!(keyword_count, 19);
         Ok(())
     }
 }
