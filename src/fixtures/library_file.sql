@@ -1,6 +1,6 @@
-insert into library_file (original_file_name, base_name, extension, file_created_time, external_mod_time, path, parent_path)
+insert into library_file (original_file_name, base_name, extension, file_created_time, file_modified_time, path, parent_path)
 values
-("abc.jpg", "abc", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/fancy-name/Desktop/abc.jpg",  "/Users/fancy-name/Desktop"),
+("abc.jpg", "abc", "jpg", "12122023 10:00:00Z",  "12122023 10:00:00", "/Users/fancy-name/Desktop/abc.jpg",  "/Users/fancy-name/Desktop"),
 ("def.jpg", "def", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/fancy-name/Desktop/def.jpg",  "/Users/fancy-name/Desktop"),
 ("ghi.jpg", "ghi", "jpg", "12122023 10:00:00",  "12122023 10:00:00", "/Users/fancy-name/Desktop/ghi.jpg",  "/Users/fancy-name/Desktop"),
 ("jkl.jpg", "jkl", "png", "12122023 10:00:00",  "12122023 10:00:00", "/Users/fancy-name/Desktop/jkl.png",  "/Users/fancy-name/Desktop"),
