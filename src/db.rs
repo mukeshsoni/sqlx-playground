@@ -1,6 +1,6 @@
 use crate::image_helpers;
 use chrono::prelude::{DateTime, Utc};
-use sqlx::{QueryBuilder, Row, Sqlite, SqlitePool, Transaction};
+use sqlx::{Execute, QueryBuilder, Row, Sqlite, SqlitePool, Transaction};
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -75,9 +75,8 @@ async fn get_images_in_path(
     if filter.color_label != "none" {
         query = query.bind(&filter.color_label);
     }
-    // let query = sqlx::query_as::<_, image_helpers::Image>(query.sql())
-    //     .bind(path)
-    //     .bind(filter.rating);
+
+    println!("Query: {:?}", query.sql());
     let query_result = query.fetch_all(pool).await?;
     println!("Number of images: {}", query_result.len());
     Ok(query_result)
@@ -204,11 +203,11 @@ async fn insert_image_details<'a>(
 
 // Find all images in the given path, extract exif and other metadata for the images and
 // insert into the database
-pub async fn insert_images(pool: &SqlitePool, path: &str) -> Result<(()), sqlx::Error> {
+pub async fn insert_images(pool: &SqlitePool, path: &str) -> Result<(), sqlx::Error> {
     // We will run all insert queries inside a transaction so that inserts are fast
-    let mut conn = pool.begin().await?;
     match get_dir_image_files(path) {
         Ok(dir_image_files) => {
+            let mut conn = pool.begin().await?;
             // todo
             // First insert library_file
             // Then insert image
@@ -220,10 +219,10 @@ pub async fn insert_images(pool: &SqlitePool, path: &str) -> Result<(()), sqlx::
                 insert_image_details(&mut conn, library_file_id, &file).await?;
             }
             conn.commit().await?;
-            return Ok(());
+            Ok(())
         }
         Err(err) => return Ok(()),
-    };
+    }
 }
 
 #[cfg(test)]
@@ -313,12 +312,23 @@ mod tests {
     #[sqlx::test(fixtures("library_file", "image", "exif", "iptc"))]
     async fn test_insert_images(pool: SqlitePool) -> sqlx::Result<()> {
         let manifest_dir = env!("CARGO_MANIFEST_DIR");
-        println!("manifest dir {manifest_dir}");
         let path = manifest_dir.to_string() + "/test_image_files";
+        let filter = Filter {
+            rating: 0,
+            flag: "unpicked".to_string(),
+            color_label: "none".to_string(),
+        };
+        let images = get_images_in_path(&pool, &path, "default", "asc", &filter).await?;
+        assert_eq!(images.len(), 0);
+
         let now = Instant::now();
-        let insertion_result = insert_images(&pool, &path).await?;
-        println!("Time elapsed {:?}", now.elapsed());
-        // assert!(false);
+        insert_images(&pool, &path).await?;
+        println!("Time elapsed for bulk insertion {:?}", now.elapsed());
+
+        let dirs = fs::read_dir(&path)?;
+        let images = get_images_in_path(&pool, &path, "default", "asc", &filter).await?;
+        assert_eq!(images.len(), dirs.count());
+
         Ok(())
     }
 }
