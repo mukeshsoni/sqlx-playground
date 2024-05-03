@@ -1,12 +1,9 @@
 use crate::image_helpers;
 use chrono::prelude::{DateTime, Utc};
+use sqlx::{QueryBuilder, Row, Sqlite, SqlitePool, Transaction};
 use std::{
     fs,
     path::{Path, PathBuf},
-};
-
-use sqlx::{
-    error::DatabaseError, sqlite::SqliteError, QueryBuilder, Row, Sqlite, SqlitePool, Transaction,
 };
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
@@ -189,6 +186,7 @@ async fn insert_image_details<'a>(
 ) -> Result<i64, sqlx::Error> {
     let meta = rexiv2::Metadata::new_from_path(Path::new(&library_file.path));
     let mut image_capture_time: String = library_file.file_created_time.clone();
+
     if meta.is_ok() {
         let meta = meta.unwrap();
         if meta.has_tag("Exif.Image.DateTime") {
@@ -207,6 +205,7 @@ async fn insert_image_details<'a>(
 // Find all images in the given path, extract exif and other metadata for the images and
 // insert into the database
 pub async fn insert_images(pool: &SqlitePool, path: &str) -> Result<(()), sqlx::Error> {
+    // We will run all insert queries inside a transaction so that inserts are fast
     let mut conn = pool.begin().await?;
     match get_dir_image_files(path) {
         Ok(dir_image_files) => {
@@ -313,9 +312,11 @@ mod tests {
     // We need to have some dummy images in some folder inside our project maybe
     #[sqlx::test(fixtures("library_file", "image", "exif", "iptc"))]
     async fn test_insert_images(pool: SqlitePool) -> sqlx::Result<()> {
-        let path = "/Users/msoni/Desktop";
+        let manifest_dir = env!("CARGO_MANIFEST_DIR");
+        println!("manifest dir {manifest_dir}");
+        let path = manifest_dir.to_string() + "/test_image_files";
         let now = Instant::now();
-        let insertion_result = insert_images(&pool, path).await?;
+        let insertion_result = insert_images(&pool, &path).await?;
         println!("Time elapsed {:?}", now.elapsed());
         // assert!(false);
         Ok(())
