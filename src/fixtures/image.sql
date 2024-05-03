@@ -5,7 +5,7 @@ INSERT INTO image (library_file_id, capture_time, file_height, file_width, ratin
 (4, "12122023 10:00:00", 2000, 1500, 1, "rejected", "green"),
 (5, "12122023 10:00:00", 1000, 1000, 2, "unpicked", "green"),
 (6, "12122023 10:00:00", 2000, 1500, 4, "picked", "yellow"),
-(7, "12122023 10:00:00", 1000, 1000, 3, "picked", "green"),
+(7, "12122023 10:00:00", 1000, 1000, 3, "unpicked", "green"),
 (8, "12122023 10:00:00", 2000, 1500, 2, "unpicked", "blue"),
 (9, "12122023 10:00:00", 1000, 1000, 5, "picked", "blue"),
 (10, "12122023 10:00:00", 2000, 1500, 0, "rejected", "yellow"),

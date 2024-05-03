@@ -103,5 +103,12 @@ create table if not exists thumbnail (
     FOREIGN KEY(image_id) REFERENCES image(id)
 );
 
+create table if not exists tag (
+    image_id INTEGER NOT NULL,
+    tag_name varchar NOT NULL,
+    FOREIGN KEY(image_id) REFERENCES image(id),
+    UNIQUE (image_id, tag_name)
+);
+
 create unique index IF NOT EXISTS image_path on library_file(path);
 create index IF NOT EXISTS image_parent_path on library_file(parent_path);
