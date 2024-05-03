@@ -225,6 +225,18 @@ pub async fn insert_images(pool: &SqlitePool, path: &str) -> Result<(), sqlx::Er
     }
 }
 
+pub async fn get_keywords(pool: &SqlitePool) -> Result<Vec<String>, sqlx::Error> {
+    let rows = sqlx::query("SELECT DISTINCT tag_name from tag")
+        .fetch_all(pool)
+        .await?;
+
+    let mut keywords = vec![];
+    for row in rows {
+        keywords.push(row.get::<String, _>("tag_name"));
+    }
+    Ok(keywords)
+}
+
 #[cfg(test)]
 mod tests {
     use std::time::Instant;
@@ -329,6 +341,13 @@ mod tests {
         let images = get_images_in_path(&pool, &path, "default", "asc", &filter).await?;
         assert_eq!(images.len(), dirs.count());
 
+        Ok(())
+    }
+
+    #[sqlx::test(fixtures("library_file", "image", "exif", "iptc", "tag"))]
+    async fn test_get_keywords(pool: SqlitePool) -> sqlx::Result<()> {
+        let keywords = get_keywords(&pool).await?;
+        assert_eq!(keywords.len(), 11);
         Ok(())
     }
 }
