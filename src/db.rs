@@ -158,8 +158,156 @@ fn get_dir_image_files(dir_path: &str) -> Result<Vec<LibraryFile>, std::io::Erro
     Ok(contents)
 }
 
+async fn insert_exif_data<'a>(
+    tx: &mut Transaction<'a, Sqlite>,
+    image_id: i64,
+    meta: &rexiv2::Metadata,
+) -> Result<i64, sqlx::Error> {
+    // TODO: Move this vector to a global constant
+    let exif_columns = vec![
+        ("camera_make", "Exif.Image.Make"),
+        ("camera_model", "Exif.Image.Model"),
+        ("exposure_time", "Exif.Image.ExposureTime"),
+        ("f_number", "Exif.Image.FNumber"),
+        ("exposure_program", "Exif.Image.ExposureProgram"),
+        ("iso_speed", "Exif.Photo.ISOSpeed"),
+        ("exif_version", "Exif.Photo.ExifVersion"),
+        ("datetime_original", "Exif.Photo.DateTimeOriginal"),
+        ("offset_time_original", "Exif.Photo.OffsetTimeOriginal"),
+        ("shutter_speed", "Exif.Photo.ShutterSpeedValue"),
+        ("aperture_value", "Exif.Photo.ApertureValue"),
+        ("brightness_value", "Exif.Photo.BrightnessValue"),
+        ("metering_mode", "Exif.Photo.MeteringMode"),
+        ("flash", "Exif.Photo.Flash"),
+        ("exposure_mode", "Exif.Photo.ExposureMode"),
+        ("white_balance", "Exif.Photo.WhiteBalance"),
+        ("focal_length", "Exif.Photo.FocalLength"),
+        (
+            "focal_length_in_35mm_film",
+            "Exif.Photo.FocalLengthIn35mmFilm",
+        ),
+        ("sharpness", "Exif.Photo.Sharpness"),
+        ("lens_specification", "Exif.Photo.LensSpecification"),
+        ("lens_make", "Exif.Photo.LensMake"),
+        ("lens_model", "Exif.Photo.LensModel"),
+        ("body_serial_number", "Exif.Photo.BodySerialNumber"),
+        ("saturation", "Exif.Photo.Saturation"),
+        ("contrast", "Exif.Photo.Contrast"),
+        ("gps_latitude", "Exif.GPSInfo.GPSLatitude"),
+        ("gps_longitude", "Exif.GPSInfo.GPSLongitude"),
+        ("gps_altitude", "Exif.GPSInfo.GPSAltitude"),
+        ("gps_timestamp", "Exif.GPSInfo.GPSTimeStamp"),
+        ("gps_status", "Exif.GPSInfo.GPSStatus"),
+        ("artist", "Exif.Image.Artist"),
+    ];
+    // Figuring the query builder part took me 2 days!
+    let mut query_builder: QueryBuilder<Sqlite> = QueryBuilder::new("INSERT INTO exif (");
+    for exif_column in exif_columns.clone() {
+        if let Ok(_column_value) = meta.get_tag_string(exif_column.1) {
+            query_builder.push(exif_column.0.to_string() + ", ");
+        }
+    }
+    query_builder.push("image_id ");
+    query_builder.push(" ) VALUES (");
+    let mut separated = query_builder.separated(", ");
+    // Why are we running the loop twice?
+    // Because we are building the column names list in the sql, e.g. (camera_make, lens_model) etc., in the first pass
+    // And building the (?) list and binding values to them in the second pass
+    // because query_builder is mutably borrowed by both push and separated.push_bind methods
+    // And we can only borrow it mutably once
+    for exif_column in exif_columns {
+        if let Ok(column_value) = meta.get_tag_string(exif_column.1) {
+            separated.push_bind(column_value);
+        }
+    }
+    separated.push_bind(image_id);
+    separated.push_unseparated(" )");
+    let query = query_builder.build();
+    let query_result = query.execute(&mut **tx).await?;
+    Ok(query_result.last_insert_rowid())
+}
+
+async fn insert_iptc_data<'a>(
+    tx: &mut Transaction<'a, Sqlite>,
+    image_id: i64,
+    meta: &rexiv2::Metadata,
+) -> Result<i64, sqlx::Error> {
+    // TODO: Move this vector to a global constant
+    let iptc_columns = vec![
+        ("copyright", "Iptc.Application2.Copyright"),
+        ("city", "Iptc.Application2.City"),
+        ("creator", "Iptc.Application2.Byline"),
+        ("country_iso_code", "Iptc.Application2.CountryCode"),
+        ("country_name", "Iptc.Application2.CountryName"),
+        ("description", "Iptc.Application2.Caption"),
+    ];
+    // Figuring the query builder part took me 2 days!
+    let mut query_builder: QueryBuilder<Sqlite> = QueryBuilder::new("INSERT INTO iptc (");
+    for iptc_column in iptc_columns.clone() {
+        if let Ok(_column_value) = meta.get_tag_string(iptc_column.1) {
+            query_builder.push(iptc_column.0.to_string() + ", ");
+        }
+    }
+    query_builder.push("image_id ");
+    query_builder.push(" ) VALUES (");
+    let mut separated = query_builder.separated(", ");
+    // Why are we running the loop twice?
+    // Because we are building the column names list in the sql, e.g. (camera_make, lens_model) etc., in the first pass
+    // And building the (?) list and binding values to them in the second pass
+    // because query_builder is mutably borrowed by both push and separated.push_bind methods
+    // And we can only borrow it mutably once
+    for iptc_column in iptc_columns {
+        if let Ok(column_value) = meta.get_tag_string(iptc_column.1) {
+            separated.push_bind(column_value);
+        }
+    }
+    separated.push_bind(image_id);
+    separated.push_unseparated(" )");
+    let query = query_builder.build();
+    let query_result = query.execute(&mut **tx).await?;
+    Ok(query_result.last_insert_rowid())
+}
+
+async fn write_exif_and_iptc_to_db<'a>(
+    tx: &mut Transaction<'a, Sqlite>,
+    library_file: &LibraryFile,
+    image_id: i64,
+) -> Result<(i64, i64), sqlx::Error> {
+    let image_path = &library_file.path;
+
+    let meta = rexiv2::Metadata::new_from_path(Path::new(image_path));
+
+    match meta {
+        Ok(meta) => {
+            let exif_id = insert_exif_data(tx, image_id, &meta).await?;
+            let iptc_id = insert_iptc_data(tx, image_id, &meta).await?;
+            Ok((exif_id, iptc_id))
+        }
+        Err(_e) => {
+            // When we can't read exif, we insert the file creation date as datetime_original
+            // If we had exif, datetime_original would correspond to the date and time the
+            // photo was taken
+            let file_creation_time = library_file.file_created_time.clone();
+            let exif_query_result =
+                sqlx::query("Insert into exif (image_id, , datetime_original) values (?, ?, ?)")
+                    .bind(image_id)
+                    .bind(file_creation_time.to_string())
+                    .execute(&mut **tx)
+                    .await?;
+            let iptc_query_result = sqlx::query("Insert into iptc (image_id) values (?, ?, ?)")
+                .bind(image_id)
+                .execute(&mut **tx)
+                .await?;
+            Ok((
+                exif_query_result.last_insert_rowid(),
+                iptc_query_result.last_insert_rowid(),
+            ))
+        }
+    }
+}
+
 async fn insert_library_file<'a>(
-    mut tx: &mut Transaction<'a, Sqlite>,
+    tx: &mut Transaction<'a, Sqlite>,
     file: &LibraryFile,
 ) -> Result<i64, sqlx::Error> {
     let query = sqlx::query("INSERT INTO library_file (original_file_name, base_name, extension, file_created_time, file_modified_time, path, parent_path) values (?, ?, ?, ?, ?, ?, ?)")
@@ -179,7 +327,7 @@ async fn insert_library_file<'a>(
 // And it takes image path so that it can extract exif information from it. It mainly
 // needs the image creation date so that we can sort by image creation date.
 async fn insert_image_details<'a>(
-    mut tx: &mut Transaction<'a, Sqlite>,
+    tx: &mut Transaction<'a, Sqlite>,
     library_file_id: i64,
     library_file: &LibraryFile,
 ) -> Result<i64, sqlx::Error> {
@@ -216,7 +364,8 @@ pub async fn insert_images(pool: &SqlitePool, path: &str) -> Result<(), sqlx::Er
             for file in dir_image_files {
                 // println!("{file:?}");
                 let library_file_id = insert_library_file(&mut conn, &file).await?;
-                insert_image_details(&mut conn, library_file_id, &file).await?;
+                let image_id = insert_image_details(&mut conn, library_file_id, &file).await?;
+                write_exif_and_iptc_to_db(&mut conn, &file, image_id).await?;
             }
             conn.commit().await?;
             Ok(())

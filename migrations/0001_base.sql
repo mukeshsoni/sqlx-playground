@@ -79,7 +79,6 @@ create table if not exists iptc (
     image_id INTEGER NOT NULL,
     copyright varchar,
     city varchar,
-    country varchar,
     creator varchar,
     country_iso_code varchar,
     country_name varchar,

@@ -1,4 +1,4 @@
-INSERT INTO iptc (image_id, copyright, city, country, creator)
+INSERT INTO iptc (image_id, copyright, city, country_name, creator)
 VALUES
 (1, "© 2016 Mukesh Soni", "Bengaluru", "India", "Mukesh Soni"),
 (1, "© 2016 Mukesh Soni", "Bengaluru", "India", "Mukesh Soni"),
